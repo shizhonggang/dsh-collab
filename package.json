@@ -1,5 +1,5 @@
 {
-  "name": "@dsh-external/dsh-collab",
+  "name": "dsh-collab",
   "version": "0.1.0",
   "description": "Multi-agent collaboration shared workspace for DSH (DSH × Claude Code × Kimi Code × DevEco Code): outbox/status/tasks/knowledge/artifacts protocol as a cross-platform DSH plugin + CLI.",
   "type": "module",

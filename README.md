@@ -17,7 +17,7 @@
 ### 作为 DSH 插件
 
 ```bash
-dsh plugin --profile web add @dsh-external/dsh-collab
+dsh plugin --profile web add dsh-collab
 ```
 
 或从 git 安装：

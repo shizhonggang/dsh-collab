@@ -1,5 +1,5 @@
 {
-  "id": "@dsh-external/dsh-collab",
+  "id": "dsh-collab",
   "version": "0.1.0",
   "main": "./lib/index.js",
   "description": "Multi-agent collaboration shared workspace for DSH: outbox/status/tasks/knowledge/artifacts protocol.",

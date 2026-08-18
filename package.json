@@ -1,0 +1,55 @@
+{
+  "name": "@dsh-external/dsh-collab",
+  "version": "0.1.0",
+  "description": "Multi-agent collaboration shared workspace for DSH (DSH × Claude Code × Kimi Code × DevEco Code): outbox/status/tasks/knowledge/artifacts protocol as a cross-platform DSH plugin + CLI.",
+  "type": "module",
+  "main": "lib/index.js",
+  "bin": {
+    "collab": "bin/collab.mjs"
+  },
+  "files": [
+    "lib",
+    "bin",
+    "templates",
+    "dsh.plugin.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "multi-agent",
+    "collaboration",
+    "harmonyos",
+    "claude-code",
+    "kimi",
+    "deveco"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18",
+    "dsh": ">=0.1.0-rc.5"
+  },
+  "dshx": {
+    "contributes": {
+      "tools": [
+        "collab_init",
+        "collab_watch",
+        "collab_mark",
+        "collab_append",
+        "collab_status",
+        "collab_sync"
+      ],
+      "skills": []
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-system-prompt": "^0.1.0-rc.7",
+    "@deepseek-ai/dsh-tools": "^0.1.0-rc.7",
+    "@deepseek-ai/cordis": "^4.0.1"
+  },
+  "dependencies": {
+    "schemastery": "^3.18.0"
+  }
+}

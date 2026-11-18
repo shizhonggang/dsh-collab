@@ -72,7 +72,8 @@ collab doctor --root /path/to/workspace            # 协议体检，见下
 
 | 检查 | 级别 | 为什么危险 |
 |---|---|---|
-| `UNNUMBERED` 未编号消息头 | error | `watch` 只认 `## [msg-N]`；裸 append 的块等于丢消息，双方都以为发出去了 |
+| `UNNUMBERED` 未编号消息头（文件末尾） | error | `watch` 只认 `## [msg-N]`；裸 append 的块等于丢消息，双方都以为发出去了 |
+| `UNNUMBERED_LEGACY` 历史裸块 | warn | 后面已有编号消息，属于旧欠账；内容重要就用编号消息 + `ref=artifacts/...` 重发 |
 | `FOREIGN_WRITER` 写者越界 | error | A 往 B 的 outbox 里写，append-only 归属被破坏 |
 | `DUPLICATE` 重复发布 | warn | 同类告警反复重发（只差时间戳），把 outbox 变成刷屏日志 |
 | `MSG_GAP` 编号断档 | warn | 有人绕过 CLI 手写或误删，接续关系不可信 |

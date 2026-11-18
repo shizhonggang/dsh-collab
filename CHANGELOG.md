@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1 — 2026-11-18
+
+发件箱模式的可验证性（对应实盘发现的失效：写了但别人看不见、告警重复刷屏、回执从不推进）。
+
+- 新增 `collab doctor`（CLI `doctor [--json]`、插件工具 `collab_doctor`、`doctor()`/`formatDoctor()`）：只读体检 `UNNUMBERED` 未编号消息 / `FOREIGN_WRITER` 写者越界 / `DUPLICATE` 重复发布（时间戳归一）/ `MSG_GAP` 编号断档 / `NEVER_MARKED` 从未 mark / `UNREAD` 回执落后。有 error 时 CLI 退出码 1。
+- `init` 新增 `--with a,b`：给非默认参与方（如 `hpc`）一次搭好 outbox/status/tasks 骨架，不再手工复制。
+- `templates/PROTOCOL.md` → v2.2：消息编号约束写成硬规则（裸追加 = 不可见）、同类事件去重、定期 doctor。
+- README 增加「协议体检」一节。
+
 ## 0.2.0 — 2026-11-18
 
 跨主机协作模式（代码层 `lib/`、`bin/` 无变化，均为文档与脚本新增）。

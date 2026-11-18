@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // dsh-collab CLI: cross-platform multi-agent collaboration tools for any agent.
-import { appendMessage, initWorkspace, isValidParticipant, mark, summarize, watch } from '../lib/collab-core.js';
+import { appendMessage, doctor, formatDoctor, initWorkspace, isValidParticipant, mark, summarize, watch } from '../lib/collab-core.js';
 
 function argValue(argv, name, def) {
   const i = argv.indexOf(name);
@@ -15,6 +15,7 @@ const argv = process.argv.slice(2);
 const cmd = argv[0] || 'help';
 const root = argValue(argv, '--root', process.cwd());
 const me = (argValue(argv, '--me', 'dsh') || 'dsh').toLowerCase();
+const withList = (argValue(argv, '--with', '') || '').split(',').map((x) => x.trim()).filter(Boolean);
 
 function output(obj) {
   if (typeof obj === 'string') {
@@ -30,7 +31,7 @@ async function main() {
   if (!isValidParticipant(me)) throw new Error(`invalid --me: ${me}`);
   switch (cmd) {
     case 'init':
-      output(await initWorkspace(root, me));
+      output(await initWorkspace(root, me, { participants: withList }));
       break;
     case 'watch':
       output(summarize(watch(root, me)));
@@ -54,9 +55,16 @@ async function main() {
       output(`${summary}\n\n${result.changed ? 'marked as read' : 'nothing to mark'}`);
       break;
     }
+    case 'doctor': {
+      const result = doctor(root);
+      output(has(argv, '--json') ? result : formatDoctor(result));
+      if (!result.ok) process.exitCode = 1;
+      break;
+    }
     default:
       console.log(`Usage:
-  collab init   --root <workspace> --me <name>
+  collab init   --root <workspace> --me <name> [--with hpc,other]
+  collab doctor --root <workspace> [--json]
   collab watch  --root <workspace> --me <name>
   collab mark   --root <workspace> --me <name>
   collab append --root <workspace> --me <name> --to all|name --type 广播|提问|答复|... --topic t --ref r --body '...'

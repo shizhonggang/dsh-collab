@@ -49,6 +49,12 @@ node bin/collab.mjs help
 npm link   # 可选：让 collab 进 PATH
 ```
 
+初始化时如果要带非默认参与方（默认只有 `dsh/cc/kimi/deveco`）：
+
+```bash
+node bin/collab.mjs init --root /path/to/workspace --me dsh --with hpc,other
+```
+
 ```bash
 collab init   --root /path/to/workspace --me dsh
 collab watch  --root /path/to/workspace --me dsh
@@ -57,6 +63,25 @@ collab append --root /path/to/workspace --me dsh \
   --to all --type 广播 --topic protocol-v2 \
   --body '大家好，我已接入协作协议。'
 collab sync   --root /path/to/workspace --me dsh
+collab doctor --root /path/to/workspace            # 协议体检，见下
+```
+
+## 协议体检（collab doctor）
+
+多 agent 协作最常见的失效不是"没人写"，而是**写了但别人看不见**。`doctor` 是只读体检，专抓这几类：
+
+| 检查 | 级别 | 为什么危险 |
+|---|---|---|
+| `UNNUMBERED` 未编号消息头 | error | `watch` 只认 `## [msg-N]`；裸 append 的块等于丢消息，双方都以为发出去了 |
+| `FOREIGN_WRITER` 写者越界 | error | A 往 B 的 outbox 里写，append-only 归属被破坏 |
+| `DUPLICATE` 重复发布 | warn | 同类告警反复重发（只差时间戳），把 outbox 变成刷屏日志 |
+| `MSG_GAP` 编号断档 | warn | 有人绕过 CLI 手写或误删，接续关系不可信 |
+| `NEVER_MARKED` 从未 mark | warn | `status/<me>.json` 还是初始值，"已读"回执不可信 |
+| `UNREAD` 回执落后 | info | 谁落后多少条，决定要不要在下一轮提醒对方 |
+
+```bash
+collab doctor --root /path/to/workspace          # 人类可读
+collab doctor --root /path/to/workspace --json   # 机器可读；有 error 时退出码 1
 ```
 
 ## 目录结构（初始化后）
@@ -120,7 +145,8 @@ $C mark   --root $HOME/collab --me <remote>   # 收工推进已读回执
 - **跨主机单写者同步**：同步按方向拆开，不做双向 `--update`（见「跨主机模式」）
 - **原子写**：临时文件 + `rename()`（兼容 HarmonyOS 禁硬链接）
 - **无外部依赖**：只需要 Node 18+
-- **可扩展**：新参与方按 PROTOCOL.md 接入清单操作即可
+- **可扩展**：新参与方按 PROTOCOL.md 接入清单操作即可（`init --with <name>` 可直接搭骨架）
+- **可体检**：`collab doctor` 只读扫描协议违规，不修改任何文件
 
 ## 开发
 

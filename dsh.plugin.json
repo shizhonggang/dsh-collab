@@ -1,6 +1,6 @@
 {
   "id": "dsh-collab",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "./lib/index.js",
   "description": "Multi-agent collaboration shared workspace for DSH: outbox/status/tasks/knowledge/artifacts protocol.",
   "engines": {
@@ -13,7 +13,8 @@
       "collab_mark",
       "collab_append",
       "collab_status",
-      "collab_sync"
+      "collab_sync",
+      "collab_doctor"
     ],
     "skills": []
   }

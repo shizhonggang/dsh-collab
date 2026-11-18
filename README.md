@@ -11,10 +11,13 @@
 - ✅ 插件与 CLI 双形态：DSH 模型直接调工具，其他 agent 用 `collab` 命令
 - ✅ 强约束：只允许追加自己的 outbox，绝不写别人文件
 - ✅ 幂等初始化：`.shared/` 骨架可重复执行，不覆盖已有内容
+- ✅ 跨主机模式：单写者定向 rsync，远程参与方（如 HPC 计算节点）只写自己的文件
 
 ## 安装
 
-### 作为 DSH 插件
+### 作为 DSH 插件（仅 DSH 0.1.x 宿主）
+
+> **版本判据**：`peerDependencies` 固定为 `^0.1.0-rc.7`。装到 **DSH 0.2.x** 宿主（`engines.dsh >= 0.1.0-rc.5` 只约束下限，不保证 peer 兼容）会撞版本，插件形态不可用；这种情况请直接用下面的 CLI 形态，零依赖。
 
 ```bash
 dsh plugin --profile web add dsh-collab
@@ -37,11 +40,13 @@ dsh plugin --profile web add https://github.com/shizhonggang/dsh-collab.git
 | `collab_status` | 查看各方状态回执和未读汇总 |
 | `collab_sync` | 开工前一条龙：watch + mark + 汇总 |
 
-### 作为通用 CLI
+### 作为通用 CLI（任意 DSH 版本 / 任意 agent）
+
+不装插件也能跑，零依赖：
 
 ```bash
-npm link   # 或 pnpm link --global
-collab help
+node bin/collab.mjs help
+npm link   # 可选：让 collab 进 PATH
 ```
 
 ```bash
@@ -72,6 +77,33 @@ workspace/
     └── knowledge/             # 共享知识
 ```
 
+## 跨主机模式（本地 ↔ 远程参与方）
+
+参与方不在同一台机器时（典型：本地 DSH ↔ HPC 计算节点上的 headless DSH），协议层完全不变，只是 `.shared/` 需要跨机器对齐。规则是**单写者 + 定向同步**：
+
+| 文件 | 写者 | 同步方向 |
+|---|---|---|
+| `outbox-<remote>.md` / `status/<remote>.json` / `tasks/<remote>.md` | 远程 | 只上行（remote → local） |
+| `outbox-<local>.md` / `status/<local>.json` / `tasks/<local>.md` | 本地 | 只下行（local → remote） |
+| 其余共享文件（`PROTOCOL.md`、其他参与者 outbox 等） | 各自的写者 | 上行拉取、两侧都会看到 |
+| `knowledge/` | 本地维护 | 单向下发（`--delete`），远程只读 |
+
+```bash
+# 本地一侧（远程不跑同步，只被同步）
+COLLAB_REMOTE=user@host scripts/sync-remote.sh
+```
+
+为什么不做双向 `rsync --update`：两侧时钟不一致时，「较新」的一方会覆盖对方**刚追加**的消息，静默丢消息且无法回溯；方向拆开后不存在竞态，也不依赖时钟。只用本地侧驱动网络，是因为计算节点常常只有出站代理。
+
+远程侧只需要：
+
+```bash
+C="node /path/to/dsh-collab/bin/collab.mjs"
+$C watch  --root $HOME/collab --me <remote>   # 开工前看有没有新消息
+$C append --root $HOME/collab --me <remote> --to <local> --type 结论 --body '...'
+$C mark   --root $HOME/collab --me <remote>   # 收工推进已读回执
+```
+
 ## 消息格式
 
 ```markdown
@@ -85,6 +117,7 @@ workspace/
 
 - **单一 writer**：每个人只写自己的 `outbox-<you>.md` / `status/<you>.json` / `tasks/<you>.md`
 - **append-only**：消息只追加，不 rewrite
+- **跨主机单写者同步**：同步按方向拆开，不做双向 `--update`（见「跨主机模式」）
 - **原子写**：临时文件 + `rename()`（兼容 HarmonyOS 禁硬链接）
 - **无外部依赖**：只需要 Node 18+
 - **可扩展**：新参与方按 PROTOCOL.md 接入清单操作即可
